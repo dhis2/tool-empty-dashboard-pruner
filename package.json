@@ -48,7 +48,7 @@
       "96": "img/icons/app_logo_96x96.png"
     },
     "name": "Empty dashboard pruner",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "appType": "APP"
   }
 }

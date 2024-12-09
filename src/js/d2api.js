@@ -1,6 +1,6 @@
 const dhisDevConfig = DHIS_CONFIG;  
 const isDev = "baseUrl" in dhisDevConfig;
-const baseUrl = isDev ? dhisDevConfig.baseUrl : "../../..";
+export const baseUrl = isDev ? dhisDevConfig.baseUrl : "../../..";
 
 // Helper function to set headers for development mode
 const getHeaders = () => {
@@ -65,6 +65,32 @@ export const d2Get = async (endpoint) => {
         throw error;
     }
 };
+
+export const d2Patch = async (endpoint, body) => {
+    try {
+        endpoint = formatEndpoint(endpoint);
+
+        if (!validateUID(endpoint)) {
+            console.warn("Warning: The endpoint does not end with a valid 11-character UID");
+        }
+
+        let headers = getHeaders();
+        headers.set("Content-Type", "application/json-patch+json");
+        let response = await fetch(baseUrl + endpoint, {
+            method: "PATCH",
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+        if (!response.ok) {
+            await handleApiError(response); // Handle the error response
+        }
+        return { status: "success" };
+    } catch (error) {
+        console.log("ERROR in PATCH:");
+        console.log(error);
+        throw error;
+    }
+}
 
 // POST to API async
 export const d2PostJson = async (endpoint, body) => {
@@ -141,3 +167,42 @@ export const d2Delete = async (endpoint) => {
         throw error;
     }
 };
+export function performPostAndGet(endpoint) {
+    endpoint = formatEndpoint(endpoint);
+    return new Promise((resolve, reject) => {
+        fetch(baseUrl + endpoint, {
+            method: "POST",
+            headers: getHeaders(),
+        })
+            .then(response => response.json())
+            .then(() => {
+                let tries = 0;
+
+                function checkForResponse() {
+                    fetch(baseUrl + endpoint, {
+                        method: "GET",
+                        headers: getHeaders(),
+                    })
+                        .then(response => response.json())
+                        .then(getData => {
+                            if (Object.keys(getData).length > 0 || tries >= 10) {
+                                resolve(getData);
+                            } else {
+                                tries++;
+                                setTimeout(checkForResponse, 1000);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error checking for response:", error);
+                            reject(error);
+                        });
+                }
+
+                checkForResponse();
+            })
+            .catch(error => {
+                console.error("Error making POST request:", error);
+                reject(error);
+            });
+    });
+}

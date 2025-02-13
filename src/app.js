@@ -47,20 +47,30 @@ async function renderDetailsTable(detailsObject, dashboard_properties, user_is_s
         }
     });
 
+    //Determine if the dashboard has public access
+    detailsObject.issues.forEach((issue) => {
+        const dashboard = dashboard_properties.dashboards.find((dashboard) => dashboard.id === issue.id);
+        if (dashboard) {
+            issue.publicAccess = dashboard.sharing.public.startsWith("rw") ? "Public" : "Private";
+        } else {
+            issue.publicAccess = "Unknown";
+        }
+    });
+
     let html = "<div id='details_table'><h2>Empty dashboards</h2>";
     html += "<h3>Dashboards with no content</h3>";
     html += "<table id='details' class='display' width='100%'>";
-    html += "<thead><tr><th>Dashboard name</th><th>ID</th><th>Last updated (days ago)</th><th>Delete</th><th>Select</th></thead><tbody>";
+    html += "<thead><tr><th>Dashboard name</th><th>ID</th><th>Last updated (days ago)</th><th>Public access</th><th>Delete</th><th>Select</th></thead><tbody>";
     detailsObject.issues.forEach((issue) => {
         html += "<tr>";
         html += `<td>${issue.name}</td>`;
         html += `<td><a href='${baseUrl}/dhis-web-dashboard/#/${issue.id}' target='_blank'>${issue.id}</a></td>`;
         html += `<td>${issue.comment}</td>`;
+        html += `<td>${issue.publicAccess}</td>`;
         html += `<td><button onclick='deleteSelectedDashboard("${issue.id}")'>Delete</button></td>`;
         html += `<td><input type='checkbox' class='dashboard-select' value='${issue.id}'></td>`;
         html += "</tr>";
     });
-    
     html += "</tbody></table></div>";
       //Include the buttons if there are dashboards to delete
     if (detailsObject.issues.length > 0) {
@@ -135,7 +145,9 @@ async function deleteSelectedDashboards() {
 async function checkVersion() {
     try {
         const data = await d2Get("/api/system/info");
-        const version = data.version.split(".")[1];
+        var version = data.version.split(".")[1];
+        //Only consider the digits
+        version = parseInt(version.match(/\d+/)[0]);
         console.log("DHIS2 version:", version);
         return version;
     } catch (error) {

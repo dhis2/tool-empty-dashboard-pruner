@@ -2,54 +2,31 @@
 <!--suppress ALL -->
 <html>
 
-<head>
-    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
 <body>
-    <div class="headerBar">
-        <a href="../../..">
-            <div class="headerBarLogoBoxContainer">
-                <div class="headerBarLogoBox">
-                    <svg class="headerBarLogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 182"
-                        class="jsx-3467673193">
-                        <path fill="#ffffff"
-                            d="M191.73,60,109,6.34a19.73,19.73,0,0,0-20.32,0L8.31,58.43a12,12,0,0,0-.25,20.63L88.6,134a19.37,19.37,0,0,0,20.37.25l82.76-53.65a11.88,11.88,0,0,0,0-20.59Zm-91,61.45a4.29,4.29,0,0,1-3.49-.05l-77-52.49L97,19.13a4.76,4.76,0,0,1,3.74,0L179.6,70.28Z">
-                        </path>
-                        <path fill="#ffffff"
-                            d="M88.66,47.82,45.1,76.06l13.61,9.33L97,60.61a4.76,4.76,0,0,1,3.74,0l39.37,25.52,14-9.06L109,47.82A19.76,19.76,0,0,0,88.66,47.82Z">
-                        </path>
-                        <path fill="#ffffff"
-                            d="M191.73,101.46l-8.62-5.59-14.05,9.06,10.53,6.83-78.91,51.15a4.37,4.37,0,0,1-3.49,0l-77-52.5,10-6.47L16.55,94.57,8.31,99.91a12,12,0,0,0-.25,20.63L88.6,175.46a19.34,19.34,0,0,0,20.37.24l82.75-53.65a11.88,11.88,0,0,0,0-20.59Z">
-                        </path>
-                    </svg>
-                </div>
-            </div>
-        </a>
-        <p class="headerBarTitle">Stale dashboard pruner</p>
-        <button class="headerBarExit" onclick="location.href='../../..';">Exit</button>
-    </div>
-
+    <div id="dhis-header-bar"></div>
+    <script defer src="resources/dhis-header-bar.js"></script>
+    <script>
+  // Create a proxy to intercept fetch requests
+(function() {
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+        const url = arguments[0];
+        const contextPath = getContextPath(); // Use the dynamic context path
+        const newUrl = url.startsWith(contextPath) || !url.startsWith('/') ? url : contextPath + url;
+        arguments[0] = newUrl;
+        return originalFetch.apply(this, arguments);
+    };
+})();
+    </script>
     <div class="mainView">
         <div>
-            <div id="detailsSection">
-                <table class="inputs">
-                    <tbody><tr>
-                        <td>Minimum age (days):</td>
-                        <td><input type="text" id="min" name="min"></td>
-                    </tr>
-                    <tr>
-                        <td>Maximum age(days):</td>
-                        <td><input type="text" id="max" name="max"></td>
-                    </tr>
-                </tbody></table>
-                <div id="detailsReport"></div>
-                <button onclick="deleteSelectedDashboards()">Delete selected dashboards</button>
+            <div id="detailsSection" ></div>
+                <div id="detailsReport" style="margin: 10px;"></div>
             </div>
             <div>
                 <div id="statusSection">
                     <div id="statusReport"></div>
-            </di>
+            </div>
         </div>
     </div>
 </body>

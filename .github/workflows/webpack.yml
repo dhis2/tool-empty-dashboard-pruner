@@ -2,10 +2,10 @@ name: Build and Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
     branches:
       - main
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: write
@@ -26,14 +26,21 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
     - name: Build
       run: |
         yarn install
         yarn run zip
 
     - name: Get version
-      run: echo "::set-output name=version::$(node -p -e "require('./package.json').version")"
       id: version
+      run: echo "version=$(jq -r .version package.json)" >> $GITHUB_ENV
+
+    - name: Get app name
+      id: app_name
+      run: echo "app_name=$(jq -r .name package.json)" >> $GITHUB_ENV
 
     - name: Create Release
       uses: actions/create-release@v1
@@ -41,8 +48,8 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: ${{ steps.version.outputs.version }}
-        tag_name: v${{ steps.version.outputs.version }}
+        release_name: ${{ env.version }}
+        tag_name: v${{ env.version }}
         body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,8 +58,8 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./compiled/tool-stale-dashboard-pruner.zip
-        asset_name: tool-stale-dashboard-pruner.zip
+        asset_path: "./compiled/${{ env.app_name }}.zip"
+        asset_name: "${{ env.app_name }}.zip"
         asset_content_type: application/zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

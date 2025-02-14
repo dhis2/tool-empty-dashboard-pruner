@@ -1,7 +1,7 @@
 {
   "name": "tool-dashboard-pruner",
   "description": "Tool to help you remove  unused or empty  dashboards from your DHIS2 instance",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "dependencies": {
     "datatables.net-dt": "^2.1.8"
   },
